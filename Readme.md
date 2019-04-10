@@ -3,6 +3,12 @@ FactorioRcon
 User friendly simplistic rcon client for Factorio game servers.
 Supports host name resolution.
 
+Screenshots
+=========================
+![Alt text](/Screens/GivePlayerItem.png?raw=true "")
+
+![Alt text](/Screens/ExecuteComamand.png?raw=true "")
+
 Quick Commands
 ==========================
 - Give player item
@@ -13,7 +19,8 @@ Quick Commands
 - Save
 - Clear Pollution
 
-Builds:
+Builds
+==========================
 
 Net4.5 Build:
 https://github.com/francisrohner/FactorioRcon/raw/master/Build/FactorioRcon_Net4_5.zip
