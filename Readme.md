@@ -13,4 +13,10 @@ Quick Commands
 - Save
 - Clear Pollution
 
+Builds:
 
+Net4.5 Build:
+https://github.com/francisrohner/FactorioRcon/raw/master/Build/FactorioRcon_Net4_5.zip
+
+Net4.6 Build:
+https://github.com/francisrohner/FactorioRcon/blob/master/Build/FactorioRcon_Net4_6.zip
