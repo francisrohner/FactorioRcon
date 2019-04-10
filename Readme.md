@@ -7,7 +7,7 @@ Screenshots
 =========================
 ![Alt text](/Screens/GivePlayerItem.png?raw=true "")
 
-![Alt text](/Screens/ExecuteComamand.png?raw=true "")
+![Alt text](/Screens/ExecuteCommand.png?raw=true "")
 
 Quick Commands
 ==========================
