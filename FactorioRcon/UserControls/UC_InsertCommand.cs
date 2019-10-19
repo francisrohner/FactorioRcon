@@ -12,10 +12,10 @@ using System.Net;
 
 namespace FactorioRcon.UserControls
 {
-    public partial class UsrCtl_InsertCommand : UserControl
+    public partial class UC_InsertCommand : UserControl
     {
         private WebClient _client;
-        public UsrCtl_InsertCommand(ItemFactory itemFactory)
+        public UC_InsertCommand(ItemFactory itemFactory)
         {
             InitializeComponent();
             _client = new WebClient();

@@ -1,4 +1,5 @@
-﻿using FactorioLib.Network;
+﻿using FactorioLib.Data;
+using FactorioLib.Network;
 using FactorioLib.Utils;
 using FactorioRcon.UserControls;
 using System;
@@ -17,28 +18,61 @@ namespace FactorioRcon.Forms
 {
     public partial class FrmMain : Form
     {
-        private RconClient _rconClient;
-        private List<string>_updateQueue;
-        private Dictionary<Tuple<Version, DateTime>, List<string>> _changeLog;
-        private object _uq_lock = new object();
+        private RconClient rconClient;
+        private List<string> updateQueue;
+        private Dictionary<Tuple<Version, DateTime>, List<string>> changeLog;
+
+        private Queue<UIUpdate> uiQueue;
+        private object queueLock = new object();
+
+        private List<RconCommand> outgoing = new List<RconCommand>();
+        private List<RconResponse> incoming = new List<RconResponse>();
+
         public FrmMain()
         {
             InitializeComponent();
-            _changeLog = new Dictionary<Tuple<Version, DateTime>, List<string>>();
-            _updateQueue = new List<string>();
+            changeLog = new Dictionary<Tuple<Version, DateTime>, List<string>>();
+            updateQueue = new List<string>();
             try
             {
                 Icon = Icon.FromHandle(Properties.Resources.factorio.GetHicon());
             }
             catch { ShowIcon = false; ShowInTaskbar = false; }
-            _rconClient = new RconClient();
-            _rconClient.ResponseReceived += Rcon_ResponseReceieved;
+            rconClient = new RconClient();
+            
             foreach(Control ctl in GetAll(this, typeof(GroupBox)))                
                 (ctl as GroupBox).Paint += GroupBox_Paint; //Bind render override
 
-            
-            FormClosing += FrmMain_FormClosing;
-            
+            rconClient.CommandSent += Rcon_CommandSent;
+            rconClient.ResponseReceived += Rcon_ResponseReceieved;
+            Load += FrmMain_Load;
+            FormClosing += FrmMain_FormClosing;         
+            KeyDown += FrmMain_KeyDown;
+            txtClientCmd.KeyDown += TxtClientCmd_KeyDown;
+
+            InitChangeLog();
+            InitGrids();
+        }
+
+        private void Rcon_CommandSent(object sender, RconClient.RconCommandEventArgs rea)
+        {
+            DisplayOutgoing(rea.command);
+        }
+
+        private void InitGrids()
+        {
+            gridIn.DataSource = new BindingSource()
+            {
+                DataSource = incoming
+            };
+            gridOut.DataSource = new BindingSource()
+            {
+                DataSource = outgoing
+            };            
+        }        
+
+        private void LoadSettings()
+        {
             if (File.Exists("fr.cfg"))
             {
                 File.Decrypt("fr.cfg");
@@ -48,10 +82,15 @@ namespace FactorioRcon.Forms
                 txtPassword.Text = reader.ReadLine();
                 reader.Close();
             }
-            _InitChangeLog();
-            KeyPress += FrmMain_KeyPress;
-            KeyDown += FrmMain_KeyDown;
-            txtClientCmd.KeyDown += TxtClientCmd_KeyDown;
+        }
+        private void SaveSettings()
+        {
+            StreamWriter writer = new StreamWriter("fr.cfg");
+            writer.WriteLine(txtHost.Text);
+            writer.WriteLine(txtPort.Text);
+            writer.WriteLine(txtPassword.Text);
+            writer.Close();
+            File.Encrypt("fr.cfg");
         }
 
         private void TxtClientCmd_KeyDown(object sender, KeyEventArgs e)
@@ -71,46 +110,60 @@ namespace FactorioRcon.Forms
                     btnSend.PerformClick();
             }
         }
-
-        private void FrmMain_KeyPress(object sender, KeyPressEventArgs e)
+        private void FrmMain_Load(object sender, EventArgs e)
         {
-            
+            LoadSettings();
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            StreamWriter writer = new StreamWriter("fr.cfg");
-            writer.WriteLine(txtHost.Text);
-            writer.WriteLine(txtPort.Text);
-            
-            writer.WriteLine(txtPassword.Text);
-            writer.Close();
-            File.Encrypt("fr.cfg");
+            SaveSettings();
+
             try
-            {
-                _rconClient.Disconnect();
+            {                
+                rconClient.Disconnect();
             }
             catch { }
         }
 
         private void Rcon_ResponseReceieved(object sender, RconClient.RconResponseEventArgs rea)
         {
-            if(rea.response.ResponseType == FactorioLib.Data.RESPONSE_TYPE.RESPONSE_VALUE)
+            DisplayIncoming(rea.response);
+            if(rea.response.ResponseType == RconResponse.Type.RESPONSE_VALUE)
                 Queue_UI_Update("ServerResp," +  rea.response.Message);
         }
         public void Queue_UI_Update(string cmd)
         {
-            lock(_uq_lock)
+            lock(queueLock)
             {
-                _updateQueue.Add(cmd);
+                updateQueue.Add(cmd);
             }
+        }
+
+        //public void QueueUpdate(RconClient.RconResponseEventArgs args)
+        //{
+        //    lock(queueLock)
+        //    {
+        //        args.response.
+        //        uiQueue.Enqueue()
+        //    }
+        //}
+
+        private abstract class UIUpdate
+        {
+            object payload;
+            public abstract void Invoke(FrmMain form);
+        }
+        public class ResponseUpdate
+        {
+
         }
 
         //Handler for styling GroupBox borderss
         private void GroupBox_Paint(object sender, PaintEventArgs e)
         {
             GroupBox gb = sender as GroupBox;
-            UI_Utils.DrawGroupBox(gb, e.Graphics, Color.DarkGreen);
+            Helper.DrawGroupBox(gb, e.Graphics, Color.DarkGreen);
         }
 
         //Function from: https://stackoverflow.com/a/3426721
@@ -126,19 +179,19 @@ namespace FactorioRcon.Forms
         
         private void AppendChange(Tuple<Version, DateTime> ver_date, string note)
         {
-            if(!_changeLog.ContainsKey(ver_date))
-                _changeLog.Add(ver_date, new List<string>());
-            _changeLog[ver_date].Add(note);            
+            if(!changeLog.ContainsKey(ver_date))
+                changeLog.Add(ver_date, new List<string>());
+            changeLog[ver_date].Add(note);            
         }
-        private void _InitChangeLog()
+        private void InitChangeLog()
         {
             AppendChange(new Tuple<Version,DateTime>(new Version(1, 0, 0, 0), new DateTime(2019, 04, 08)), "Initial build, working but UI is unresponsive");
             AppendChange(new Tuple<Version, DateTime>(new Version(1, 0, 0, 1), new DateTime(2019, 04, 09)), "Working command generator, need to revise image aquisition code");
-            foreach(Tuple<Version, DateTime> key in _changeLog.Keys)
+            foreach(Tuple<Version, DateTime> key in changeLog.Keys)
             {
                 rtbChangeLog.AppendText("[" + key.Item1.ToString() + " -- " + key.Item2.ToString("yyyy-MM-dd") + "]\r\n");
 
-                foreach (string note in _changeLog[key])
+                foreach (string note in changeLog[key])
                     rtbChangeLog.AppendText("\t--" + note + "\r\n");
             }
 
@@ -178,34 +231,31 @@ namespace FactorioRcon.Forms
         /// Get name of first online player with quotations
         /// </summary>
         /// <returns></returns>
-        public string _GetOnlinePlayer()
+        public string GetOnlinePlayer()
         {
             string ret = string.Empty;
             if(lstOnline.Items.Count > 0)
                 ret = "\"" + (string)lstOnline.Items[0] + "\"";
             return ret;
         }
-        public void SetConsoleText(string cmd) { txtClientCmd.Text = cmd; }
-
-        #region Console
         private void BtnCmdGenerator_Click(object sender, EventArgs e)
         {
-            UsrCtl_CommandGenerator cg = new UsrCtl_CommandGenerator(this);
+            UC_CommandGenerator cg = new UC_CommandGenerator(this);
             cg.Dock = DockStyle.Fill;
             tabConsole.Controls.Add(cg);
             cg.BringToFront();
-        }
-
-        private void _EnableUI()
+        }        
+        public void SetConsoleText(string cmd) { txtClientCmd.Text = cmd; }
+        private void EnableUI()
         {
             tcMain.Enabled = true;
             gbQuickCommand.Enabled = true;
         }
-        private void _DisableUI()
+        private void DisableUI()
         {
             tcMain.Enabled = false;
             gbQuickCommand.Enabled = false;
-        }
+        }        
 
         private void BtnConnect_Click(object sender, EventArgs e)
         {
@@ -217,31 +267,42 @@ namespace FactorioRcon.Forms
                     MessageBox.Show(this, "Please input a numerical port value.", "Incorrect Port", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                int ec = _rconClient.Connect(txtHost.Text, port, txtPassword.Text);
+                int ec = rconClient.Connect(txtHost.Text, port, txtPassword.Text);
                 if (ec < 0)
                 {
-                    string err_msg = string.Format("Unable to establish a connection to {0}:{1}.", txtHost.Text, port);
-                    MessageBox.Show(this, err_msg, "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (ec == (int)ERROR_CODES.INCORRECT_PASSWORD)
+                    {
+                        MessageBox.Show(this, "Incorrect password supplied.", "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else
+                    {
+                        string errorMsg = $"Unable to establish a connection to {txtHost.Text}:{port}.";
+                        MessageBox.Show(this, errorMsg, "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    try
+                    {
+                        rconClient.Disconnect();
+                    }
+                    catch { }
                 }
                 else //Connection Success
                 {
                     btnConnect.Text = "Disconnect";
-                    _rconClient.QueueCommand("/p");
-                    _EnableUI();
+                    SendCommand("/p");
+                    EnableUI();
                 }
             }
             else //Disconnect
             {
                 try
                 {
-                    _DisableUI();
-                    _rconClient.Disconnect();
+                    DisableUI();
+                    rconClient.Disconnect();
                     btnConnect.Text = "Connect";
                 }
                 catch { }
             }
         }
-        #endregion
 
         public void AppendText(RichTextBox box, string text, Color color)
         {
@@ -252,50 +313,49 @@ namespace FactorioRcon.Forms
             box.SelectionColor = box.ForeColor;
         }
         private void btnSend_Click(object sender, EventArgs e)
-        {
-            //int ec = _rconClient.SendCommand(txtClientCmd.Text);
-            _rconClient.QueueCommand(txtClientCmd.Text);
-            int ec = 1;
-            if (ec > 0)
-            {
-                AppendText(rtbServerResp, txtClientCmd.Text + "\r\n", Color.Blue);
-                txtClientCmd.Clear();
-            }
-            else
-            {
-                //err
-                MessageBox.Show(this, "Failed to send command.",
-                    "Rcon Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+        {            
+            SendCommand(txtClientCmd.Text);            
+            AppendText(rtbServerResp, txtClientCmd.Text + "\r\n", Color.Blue);
+            txtClientCmd.Clear();
         }
         private void tmrUpdateUI_Tick(object sender, EventArgs e)
         {
             tmrUpdateUI.Enabled = false; //prevent re-entry
             List<string> queueCopy = new List<string>();
-            lock(_uq_lock)
+            lock(queueLock)
             {
-                if (_updateQueue.Count > 0)
+                if (updateQueue.Count > 0)
                 {
-                    foreach (string update in _updateQueue)
+                    foreach (string update in updateQueue)
                         queueCopy.Add((string)update.Clone());
-                    _updateQueue.Clear();
+                    updateQueue.Clear();
                 }
             }
             while(queueCopy.Count > 0)
             {
                 string[] arr = queueCopy[0].Split(',');
                 queueCopy.RemoveAt(0);
-                if (arr[0] == "ServerResp")
+                string task = arr.First();
+                if (task == "ServerResp")
                 {
                     string resp = arr[1];
                     AppendText(rtbServerResp, resp + "\r\n", Color.Red);
                     if(resp.Contains("Players")) //update status tab page
-                        _ProcessPlayersStr(resp);
+                        ProcessPlayersStr(resp);
                 }
+                else if(task == "RefreshIncoming")
+                {
+                    (gridIn.DataSource as BindingSource).CurrencyManager.Refresh();
+                }
+                else if(task == "RefreshOutgoing")
+                {
+                    (gridOut.DataSource as BindingSource).CurrencyManager.Refresh();
+                }
+
             }
             tmrUpdateUI.Enabled = true;
         }
-        private void _ProcessPlayersStr(string str_players)
+        private void ProcessPlayersStr(string str_players)
         {
             lstOffline.Items.Clear();
             lstOnline.Items.Clear();
@@ -311,48 +371,48 @@ namespace FactorioRcon.Forms
 
         private void BtnHelp_Click(object sender, EventArgs e)
         {
-            _rconClient.QueueCommand("/h");
+            SendCommand("/h");
         }
 
         private void BtnSetDay_Click(object sender, EventArgs e)
         {
-            string online_player = _GetOnlinePlayer();
-            if (string.IsNullOrEmpty(online_player))
+            string onlinePlayer = GetOnlinePlayer();
+            if (string.IsNullOrEmpty(onlinePlayer))
             {
                 MessageBox.Show(this, "This command requires at least one player online.", "No Players Online", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                _rconClient.QueueCommand(string.Format("/c game.players[{0}].surface.always_day=true", online_player));
+                SendCommand($"/c game.players[{onlinePlayer}].surface.always_day=true");
             }
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            _rconClient.QueueCommand("/save");
+            SendCommand("/save");
         }
         
         private void BtnClearPollution_Click(object sender, EventArgs e)
         {
-            string online_player = _GetOnlinePlayer();
+            string online_player = GetOnlinePlayer();
             if (string.IsNullOrEmpty(online_player))
             {
                 MessageBox.Show(this, "This command requires at least one player online.", "No Players Online", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                _rconClient.QueueCommand(string.Format("/c game.players[{0}].surface.clear_pollution()", online_player));
+                SendCommand(string.Format("/c game.players[{0}].surface.clear_pollution()", online_player));
             }
         }
 
         private void PbRefresh_Click(object sender, EventArgs e)
         {
-            _rconClient.QueueCommand("/p");
+            SendCommand("/p");
         }
 
         private void BtnPurgeBiters_Click(object sender, EventArgs e)
         {
-            string online_player = _GetOnlinePlayer();
+            string online_player = GetOnlinePlayer();
             if (string.IsNullOrEmpty(online_player))
             {
                 MessageBox.Show(this, "This command requires at least one player online.", "No Players Online", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -360,53 +420,68 @@ namespace FactorioRcon.Forms
             else
             {
                 string cmd = "/c local surface=game.players[" + online_player +"].surface for key, entity in pairs(surface.find_entities_filtered({ force = \"enemy\"})) do  entity.destroy() end";
-                _rconClient.QueueCommand(cmd);
+                SendCommand(cmd);
             }
         }
 
         private void BtnPurgeEvolution_Click(object sender, EventArgs e)
         {
-            _rconClient.QueueCommand("/c game.forces[\"enemy\"].evolution_factor=0");
+            SendCommand("/c game.forces[\"enemy\"].evolution_factor=0");
         }
 
         private void BtnResearchAll_Click(object sender, EventArgs e)
         {
-            string online_player = _GetOnlinePlayer();
+            string online_player = GetOnlinePlayer();
             if (string.IsNullOrEmpty(online_player))
             {
                 MessageBox.Show(this, "This command requires at least one player online.", "No Players Online", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                _rconClient.QueueCommand("/c game.players[" + online_player + "].force.research_all_technologies()");
+                SendCommand("/c game.players[" + online_player + "].force.research_all_technologies()");
             }
+        }
+
+
+        private string SurfaceCommand(string player, string type, int amount)
+        {
+            return  $"/c surface = game.players[{player}].surface for _, ore in pairs(surface.find_entities_filtered({{ type = \"{type}\"}})) do ore.amount = {amount} end";
         }
 
         //pending
         private void BtnRefillResources_Click(object sender, EventArgs e)
         {
-            string online_player = _GetOnlinePlayer();
+            string online_player = GetOnlinePlayer();
             if (string.IsNullOrEmpty(online_player))
             {
                 MessageBox.Show(this, "This command requires at least one player online.", "No Players Online", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            string[] ores = new[] { "iron-ore", "copper-ore", "stone", "crude-oil", "coal", "uranium-ore" };
+            foreach(string ore in ores)
+            {
+                SendCommand(SurfaceCommand(online_player, ore, 1000));
+            }            
+        }
 
-            string cmd = "/c surface = game.players[" + online_player + "].surface for _, ore in pairs(surface.find_entities_filtered({ type = \"" + "iron-ore" + "\"})) do ore.amount = 10000 end";
-            _rconClient.QueueCommand(cmd);
+        private void DisplayOutgoing(RconCommand cmd)
+        {
+            outgoing.Add(cmd);
+            //(gridOut.DataSource as BindingSource).CurrencyManager.Refresh();
+            updateQueue.Add("RefreshOutgoing");
+        }
+        private void DisplayIncoming(RconResponse resp)
+        {
+            incoming.Add(resp);
+            //(gridIn.DataSource as BindingSource).CurrencyManager.Refresh();
+            updateQueue.Add("RefreshIncoming");
+        }
 
-            cmd = "/c surface = game.players[" + online_player + "].surface for _, ore in pairs(surface.find_entities_filtered({ type = \"" + "copper-ore" + "\"})) do ore.amount = 10000 end";
-            _rconClient.QueueCommand(cmd);
-
-            cmd = "/c surface = game.players[" + online_player + "].surface for _, ore in pairs(surface.find_entities_filtered({ type = \"" + "uranium-ore" + "\"})) do ore.amount = 10000 end";
-            _rconClient.QueueCommand(cmd);
-
-            cmd = "/c surface = game.players[" + online_player + "].surface for _, ore in pairs(surface.find_entities_filtered({ type = \"" + "stone" + "\"})) do ore.amount = 10000 end";
-            _rconClient.QueueCommand(cmd);
-
-            cmd = "/c surface = game.players[" + online_player + "].surface for _, ore in pairs(surface.find_entities_filtered({ type = \"" + "crude-oil" + "\"})) do ore.amount = 10000 end";
-            _rconClient.QueueCommand(cmd);
+        private void SendCommand(string command)
+        {
+            RconCommand rcmd = new RconCommand(command);            
+            rconClient.QueueCommand(rcmd);
         }
     }
 }

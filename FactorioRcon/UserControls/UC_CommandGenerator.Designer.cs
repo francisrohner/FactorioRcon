@@ -1,6 +1,6 @@
 ﻿namespace FactorioRcon.UserControls
 {
-    partial class UsrCtl_CommandGenerator
+    partial class UC_CommandGenerator
     {
         /// <summary> 
         /// Required designer variable.

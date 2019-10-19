@@ -8,6 +8,8 @@ namespace FactorioLib.Utils
 {
     public enum ERROR_CODES
     {        
+        INCORRECT_PASSWORD = -5,
+        EMPTY_MESSAGE = -4,
         TRANSMIT_ERROR = -3,
         TIMEOUT = -2,
         FAILURE = -1,

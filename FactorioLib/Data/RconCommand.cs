@@ -1,6 +1,7 @@
 ﻿using FactorioLib.Utils;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FactorioLib.Data
 {
-    public enum COMMAND_TYPE
+    public enum CommandType
     {
         EXEC_CMD = 2,
         AUTH = 3,
@@ -16,52 +17,62 @@ namespace FactorioLib.Data
     }
     public class RconCommand
     {
-        public int RequestId;
-        public COMMAND_TYPE CommandType;
-        public string Message;
-        public string ExtraData;
-        
-        public RconCommand(int requestId, string command)
-        {
-            RequestId = requestId;
-            Message = command;
-            ExtraData = string.Empty;
-            CommandType = COMMAND_TYPE.EXEC_CMD;
+        private static int CurentRequestId = 0;
+
+        public int RequestId { get; }
+        public CommandType CommandType { get; }
+        public string Message { get; }
+
+        [Browsable(false)]
+        public byte[] Raw { get; }
+        public string Hex => Helper.ToHex(Raw);
+        public string CSV => Helper.ToByteCSV(Raw);
+
+        public RconCommand(string command) : this(command, CommandType.EXEC_CMD)
+        {            
         }
 
-        public RconCommand(int requestId, string command, COMMAND_TYPE type)
+        public RconCommand(string command, CommandType type)
         {
-            RequestId = requestId;
-            Message = command;
-            ExtraData = string.Empty;
+            unsafe
+            {
+                ++CurentRequestId;
+            }
+            RequestId = CurentRequestId;
+            Message = command;            
             CommandType = type;
+            Raw = ToBytes();
         }
 
-        public byte[] ToBytes()
+        private byte[] ToBytes()
         {
-            byte[] buf;
-
-            MemoryStream stream = new MemoryStream();
-            //stream.WriteByte(0);
-            stream.Write(BitConverter.GetBytes(RequestId), 0, 4);
-            stream.Write(BitConverter.GetBytes((int)CommandType), 0, 4);
-            buf = Encoding.ASCII.GetBytes(Message);            
-            stream.Write(buf, 0, buf.Length);
-            stream.WriteByte(0); //null char
-            buf = Encoding.ASCII.GetBytes(ExtraData);
-            stream.Write(buf, 0, buf.Length);
-            stream.WriteByte(0); //null char
-            //stream.Close();
-
-            MemoryStream stream2 = new MemoryStream();
-            byte[] len = BitConverter.GetBytes((int)stream.Length);
-            stream2.Write(len, 0, len.Length);
-            stream.Position = 0;
-            stream.CopyTo(stream2);
-            stream.Close();
-            byte[] ret = stream2.ToArray();
-            stream2.Close();
+            byte[] ret, content;
+            using (MemoryStream payload = new MemoryStream())
+            {
+                WriteInt32ToStream(payload, RequestId); //ID
+                WriteInt32ToStream(payload, (int)CommandType); //Type
+                WriteStringToStream(payload, Message); //Body
+                payload.WriteByte(0); //Padding                
+                content = payload.ToArray();
+            }
+            using(MemoryStream envelope = new MemoryStream())
+            {
+                envelope.Write(BitConverter.GetBytes(content.Length), 0, 4); //Size
+                envelope.Write(content, 0, content.Length); //content
+                ret = envelope.ToArray();
+            }            
             return ret;
+        }
+
+        private void WriteInt32ToStream(Stream stream, int value)
+        {
+            stream.Write(BitConverter.GetBytes(value), 0, 4);
+        }
+        private void WriteStringToStream(Stream stream, string value)
+        {
+            byte[] buf = Encoding.UTF8.GetBytes(value);
+            stream.Write(buf, 0, buf.Length);
+            stream.WriteByte(0); //null terminate
         }
     }
 }

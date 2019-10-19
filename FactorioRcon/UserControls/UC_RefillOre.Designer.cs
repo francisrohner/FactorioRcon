@@ -1,6 +1,6 @@
 ﻿namespace FactorioRcon.UserControls
 {
-    partial class UsrCtl_RefillOre
+    partial class UC_RefillOre
     {
         /// <summary> 
         /// Required designer variable.

@@ -23,42 +23,47 @@ namespace FactorioLib.Network
         }
         public delegate void RconResponseHandler(object sender, RconResponseEventArgs rea);
 
-        private MultiLogger _logger; //TODO
-        private Socket _socket;
-        private int _requestId;
+        public class RconCommandEventArgs : EventArgs
+        {
+            public RconCommand command;
+            public RconCommandEventArgs(RconCommand command) { this.command = command; }
+        }
+        public delegate void RconCommandHandler(object sender, RconCommandEventArgs rea);
 
-        private Thread _processingThread;
-        private bool _working;
+        private MultiLogger logger; //TODO
+        private Socket socket;        
+        private Thread processingThread;
+        private bool working;
+        private List<RconCommand> cmdQueue;
+        private object queueLock = new object();
 
-        private List<string> _cmdQueue;
-        private object _cq_lock = new object();
-        public MultiLogger Logger { get { return _logger; } }
+        public MultiLogger Logger { get { return logger; } }
+        public RconCommandHandler CommandSent;
         public RconResponseHandler ResponseReceived;
+        
 
         public RconClient()
-        {
-            _requestId = 0;            
-            _cmdQueue = new List<string>();            
+        {            
+            cmdQueue = new List<RconCommand>();
         }
 
-        private void _StartProcThread()
+        private void StartProcThread()
         {
-            _working = true;
-            _processingThread = new Thread(new ThreadStart(_Work));
-            _processingThread.Start();
+            working = true;
+            processingThread = new Thread(new ThreadStart(Work));
+            processingThread.Start();
         }
 
-        private void _Work()
+        private void Work()
         {
-            while (_working)
+            while (working)
             {
-                lock(_cq_lock)
-                {
-                    //
-                    while(_cmdQueue.Count > 0)
+                lock(queueLock)
+                {                    
+                    while(cmdQueue.Count > 0)
                     {
-                        string cmd = _cmdQueue[0];
-                        _cmdQueue.RemoveAt(0);
+                        RconCommand cmd = cmdQueue[0];
+                        cmdQueue.RemoveAt(0);
                         SendCommand(cmd);
                     }
                 }
@@ -66,55 +71,54 @@ namespace FactorioLib.Network
             }
         }
 
-        public void QueueCommand(string cmd)
+        public void QueueCommand(RconCommand cmd)
         {
-            lock(_cq_lock)
+            lock(queueLock)
             {
-                _cmdQueue.Add(cmd);
+                cmdQueue.Add(cmd);
             }
         }
-        
 
-        private int SendCommand(string cmd)
-        {
-            return SendCommand(cmd, COMMAND_TYPE.EXEC_CMD);
-        }
-        private int SendCommand(string cmd, COMMAND_TYPE cmd_type)
+
+        private int SendCommand(RconCommand command)
         {
             int ret = (int)ERROR_CODES.FAILURE;
-
-            unsafe { ++_requestId; } //If > int.MaxValue rolls over  
-            RconCommand rcmd = new RconCommand(_requestId, cmd, cmd_type);
             try
             {
-                byte[] tx_buf = rcmd.ToBytes();
-                int ec = _socket.Send(tx_buf);
-                
-                if (ec < tx_buf.Length)
+                byte[] buf = command.Raw;
+                int ec = socket.Send(buf);
+                CommandSent?.Invoke(this, new RconCommandEventArgs(command));
+                if (ec < buf.Length)
                 {
                     ret = (int)ERROR_CODES.TRANSMIT_ERROR;
-                    goto EXIT_RET;
+                    return ret;
                 }
                 
                Thread.Sleep(100);
 
                 ec = Receive(out RconResponse response);
                 if (ec < 0)
-                {
-                    ret = ec;
-                    goto EXIT_RET;
+                {                    
+                    return ec;
                 }
+
                 //Raise event
                 ResponseReceived?.Invoke(this, new RconResponseEventArgs(response));
                 
+                if(response.ResponseType == RconResponse.Type.AUTH_RESPONSE)
+                {
+                    if(command.RequestId != response.RequestId)
+                    {
+                        ec = (int)ERROR_CODES.INCORRECT_PASSWORD;
+                    }
+                }
+
                 ret = ec;
             }
-            catch
+            catch (Exception ex)
             {
+                Trace.WriteLine(ex);
             }
-
-            //wait for resp
-        EXIT_RET:
             return ret;
         }
 
@@ -126,30 +130,21 @@ namespace FactorioLib.Network
             response = null;
             try
             {
-                MemoryStream ms = new MemoryStream();
-                Stopwatch stw = new Stopwatch();
-                stw.Start();
-
-                do
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    if (_socket.Available > 0)
+                    Stopwatch stw = new Stopwatch();
+                    stw.Start();
+                    while (socket.Available > 0)
                     {
-                        rxlen = _socket.Receive(buf, SocketFlags.None);
-                        ms.Write(buf, 0, rxlen);
+                        rxlen = socket.Receive(buf, SocketFlags.None);
+                        stream.Write(buf, 0, rxlen);
+                        //if (rxlen <= 0) { break; }
                     }
-                    else
-                    {
-                        break; // nothing available for read
-                    }
-                } while (rxlen > 0);
-
-                stw.Stop();
-                Console.WriteLine("Receive finished in {0} seconds", 
-                    stw.Elapsed.TotalSeconds);
-                ms.Close();
-                byte[] data = ms.ToArray();
-                if (data.Length > 0)
-                    ret = RconResponse.FromBytes(data, out response);                
+                    stw.Stop();
+                    Trace.WriteLine($"Receive finished in {stw.Elapsed}");                    
+                    byte[] data = stream.ToArray();                    
+                    ret = RconResponse.FromBytes(data, out response);
+                }
             }
             catch(Exception ex)
             {
@@ -168,15 +163,16 @@ namespace FactorioLib.Network
             {
                 try
                 {
-                    _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    _socket.ReceiveTimeout = 10 * 1000; //Allows 10s max for RX
-                    _socket.SendTimeout = 10 * 1000; //Allow 10s max for TX
-                    _socket.Connect(address, port);
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    socket.ReceiveTimeout = 10 * 1000; //Allows 10s max for RX
+                    socket.SendTimeout = 10 * 1000; //Allow 10s max for TX
+                    socket.Connect(address, port);
                     //note this yields resp
-                    ec = SendCommand(password, COMMAND_TYPE.AUTH);
+                    ec = SendCommand(new RconCommand(password, CommandType.AUTH));
                     if (ec > 0) //Auth successful, start processing thread
-                        _StartProcThread();
-
+                    {
+                        StartProcThread();
+                    }
                     ret = ec;
                     break;
                 }
@@ -196,15 +192,15 @@ namespace FactorioLib.Network
 
         public void Disconnect()
         {
-            if (_socket.Connected)
+            if (socket.Connected)
             {
                 try
                 {
-                    _socket.Disconnect(false);
+                    socket.Disconnect(false);
                 }
                 catch { }
             }
-            _working = false;
+            working = false;
         }
 
     }

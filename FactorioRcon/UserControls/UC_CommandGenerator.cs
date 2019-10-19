@@ -13,15 +13,16 @@ using FactorioLib.Utils;
 
 namespace FactorioRcon.UserControls
 {
-    public partial class UsrCtl_CommandGenerator : UserControl
+    public partial class UC_CommandGenerator : UserControl
     {
-        private FrmMain _frmMain;        
-        private UsrCtl_InsertCommand _insertCmd;
-        private UsrCtl_RefillOre _refillOre;
-        public UsrCtl_CommandGenerator(FrmMain frmMain)
+        private FrmMain frmMain;        
+        private UC_InsertCommand insertCmd;
+        private UC_RefillOre refillOre;
+
+        public UC_CommandGenerator(FrmMain frmMain)
         {
             InitializeComponent();
-            _frmMain = frmMain;
+            this.frmMain = frmMain;
 
             _InitPlayers();
             _InitCommands();
@@ -29,8 +30,8 @@ namespace FactorioRcon.UserControls
 
             ItemFactory itemFactory = new ItemFactory();
             itemFactory.Load("recipedump.txt");
-            _refillOre = new UsrCtl_RefillOre() { Dock = DockStyle.Fill };
-            _insertCmd = new UsrCtl_InsertCommand(itemFactory) { Dock = DockStyle.Fill };
+            refillOre = new UC_RefillOre() { Dock = DockStyle.Fill };
+            insertCmd = new UC_InsertCommand(itemFactory) { Dock = DockStyle.Fill };
             cmbType.SelectedIndexChanged += CmbType_SelectedIndexChanged;
             cmbType.SelectedIndex = 0;
             gbParam.Paint += GbParam_Paint;
@@ -39,7 +40,7 @@ namespace FactorioRcon.UserControls
 
         private void _InitPlayers()
         {
-            foreach (string online_player in _frmMain.lstOnline.Items)
+            foreach (string online_player in frmMain.lstOnline.Items)
                 cmbPlayer.Items.Add(online_player);
             if(cmbPlayer.Items.Count > 0)
                 cmbPlayer.SelectedIndex = 0;
@@ -47,7 +48,7 @@ namespace FactorioRcon.UserControls
 
         private void GbParam_Paint(object sender, PaintEventArgs e)
         {
-            UI_Utils.DrawGroupBox(sender as GroupBox, e.Graphics, Color.DarkGreen);
+            Helper.DrawGroupBox(sender as GroupBox, e.Graphics, Color.DarkGreen);
         }
         
 
@@ -58,11 +59,11 @@ namespace FactorioRcon.UserControls
             {
                 case 0: //Insert
                     gbParam.Text = "Item";                    
-                    gbParam.Controls.Add(_insertCmd);
+                    gbParam.Controls.Add(insertCmd);
                     break;
                 case 1:
                     gbParam.Text = "Ore";
-                    gbParam.Controls.Add(_refillOre);
+                    gbParam.Controls.Add(refillOre);
                     break;
 
             }
@@ -94,7 +95,7 @@ namespace FactorioRcon.UserControls
             switch(cmbType.SelectedIndex)
             {
                 case 0: //item
-                    UsrCtl_InsertCommand uctl = ctl as UsrCtl_InsertCommand;
+                    UC_InsertCommand uctl = ctl as UC_InsertCommand;
                     str_cmd = "/c game.players[" + _Quote(cmbPlayer.Text) + "].insert{name=" + _Quote(uctl.cmbItem.Text) + ", count=" + uctl.tbAmount.Value + "}";                    
                     break;
                 case 1: //Ore fill
@@ -102,7 +103,7 @@ namespace FactorioRcon.UserControls
                     break;
             }
 
-            _frmMain.SetConsoleText(str_cmd);
+            frmMain.SetConsoleText(str_cmd);
             Parent.Controls.Remove(this);
         }
     }

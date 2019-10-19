@@ -62,7 +62,7 @@
     <Compile Include="Utils\ERROR_CODES.cs" />
     <Compile Include="Utils\FileSystemUtils.cs" />
     <Compile Include="Utils\Globals.cs" />
-    <Compile Include="Utils\UI_Utils.cs" />
+    <Compile Include="Utils\Helper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="factorio.ico" />

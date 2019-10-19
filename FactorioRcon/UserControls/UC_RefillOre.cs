@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace FactorioRcon.UserControls
 {
-    public partial class UsrCtl_RefillOre : UserControl
+    public partial class UC_RefillOre : UserControl
     {
-        public UsrCtl_RefillOre()
+        public UC_RefillOre()
         {
             InitializeComponent();
         }

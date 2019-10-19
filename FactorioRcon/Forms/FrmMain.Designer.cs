@@ -37,6 +37,7 @@
             this.btnSend = new System.Windows.Forms.Button();
             this.txtClientCmd = new System.Windows.Forms.TextBox();
             this.tabStatus = new System.Windows.Forms.TabPage();
+            this.pbRefresh = new System.Windows.Forms.PictureBox();
             this.gbPlayers = new System.Windows.Forms.GroupBox();
             this.lblOnline = new System.Windows.Forms.Label();
             this.lblOffline = new System.Windows.Forms.Label();
@@ -56,6 +57,7 @@
             this.gbContribution = new System.Windows.Forms.GroupBox();
             this.llDonate = new System.Windows.Forms.LinkLabel();
             this.lblDonate = new System.Windows.Forms.Label();
+            this.pbCopy = new System.Windows.Forms.PictureBox();
             this.lblBTCAddress = new System.Windows.Forms.Label();
             this.lblDonateBTC = new System.Windows.Forms.Label();
             this.gbConnect = new System.Windows.Forms.GroupBox();
@@ -71,17 +73,21 @@
             this.lblHost = new System.Windows.Forms.Label();
             this.tmrUpdateUI = new System.Windows.Forms.Timer(this.components);
             this.gbQuickCommand = new System.Windows.Forms.GroupBox();
-            this.btnSave = new System.Windows.Forms.Button();
-            this.btnSetDay = new System.Windows.Forms.Button();
-            this.btnHelp = new System.Windows.Forms.Button();
-            this.btnClearPollution = new System.Windows.Forms.Button();
-            this.btnPurgeBiters = new System.Windows.Forms.Button();
             this.btnPurgeEvolution = new System.Windows.Forms.Button();
-            this.pbRefresh = new System.Windows.Forms.PictureBox();
-            this.pbCopy = new System.Windows.Forms.PictureBox();
-            this.ttMain = new System.Windows.Forms.ToolTip(this.components);
-            this.btnResearchAll = new System.Windows.Forms.Button();
             this.btnRefillResources = new System.Windows.Forms.Button();
+            this.btnResearchAll = new System.Windows.Forms.Button();
+            this.btnPurgeBiters = new System.Windows.Forms.Button();
+            this.btnClearPollution = new System.Windows.Forms.Button();
+            this.btnHelp = new System.Windows.Forms.Button();
+            this.btnSetDay = new System.Windows.Forms.Button();
+            this.btnSave = new System.Windows.Forms.Button();
+            this.ttMain = new System.Windows.Forms.ToolTip(this.components);
+            this.tabDiagnostic = new System.Windows.Forms.TabPage();
+            this.splDiagnostic = new System.Windows.Forms.SplitContainer();
+            this.gridOut = new System.Windows.Forms.DataGridView();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.gridIn = new System.Windows.Forms.DataGridView();
             this.tcMain.SuspendLayout();
             this.tabConsole.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splConsole)).BeginInit();
@@ -89,15 +95,22 @@
             this.splConsole.Panel2.SuspendLayout();
             this.splConsole.SuspendLayout();
             this.tabStatus.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).BeginInit();
             this.gbPlayers.SuspendLayout();
             this.tabAbout.SuspendLayout();
             this.gbInfo.SuspendLayout();
             this.gbContact.SuspendLayout();
             this.gbContribution.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCopy)).BeginInit();
             this.gbConnect.SuspendLayout();
             this.gbQuickCommand.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCopy)).BeginInit();
+            this.tabDiagnostic.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splDiagnostic)).BeginInit();
+            this.splDiagnostic.Panel1.SuspendLayout();
+            this.splDiagnostic.Panel2.SuspendLayout();
+            this.splDiagnostic.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gridOut)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridIn)).BeginInit();
             this.SuspendLayout();
             // 
             // tcMain
@@ -108,6 +121,7 @@
             this.tcMain.Controls.Add(this.tabConsole);
             this.tcMain.Controls.Add(this.tabStatus);
             this.tcMain.Controls.Add(this.tabAbout);
+            this.tcMain.Controls.Add(this.tabDiagnostic);
             this.tcMain.Enabled = false;
             this.tcMain.Location = new System.Drawing.Point(12, 142);
             this.tcMain.Name = "tcMain";
@@ -198,10 +212,20 @@
             this.tabStatus.Location = new System.Drawing.Point(4, 25);
             this.tabStatus.Name = "tabStatus";
             this.tabStatus.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStatus.Size = new System.Drawing.Size(901, 371);
+            this.tabStatus.Size = new System.Drawing.Size(901, 437);
             this.tabStatus.TabIndex = 1;
             this.tabStatus.Text = "Status";
             this.tabStatus.UseVisualStyleBackColor = true;
+            // 
+            // pbRefresh
+            // 
+            this.pbRefresh.Image = global::FactorioRcon.Properties.Resources.refresh_button;
+            this.pbRefresh.Location = new System.Drawing.Point(367, 15);
+            this.pbRefresh.Name = "pbRefresh";
+            this.pbRefresh.Size = new System.Drawing.Size(35, 34);
+            this.pbRefresh.TabIndex = 1;
+            this.pbRefresh.TabStop = false;
+            this.pbRefresh.Click += new System.EventHandler(this.PbRefresh_Click);
             // 
             // gbPlayers
             // 
@@ -419,6 +443,17 @@
             this.lblDonate.TabIndex = 3;
             this.lblDonate.Text = "Donate:";
             // 
+            // pbCopy
+            // 
+            this.pbCopy.Image = global::FactorioRcon.Properties.Resources.copy_content;
+            this.pbCopy.Location = new System.Drawing.Point(391, 22);
+            this.pbCopy.Name = "pbCopy";
+            this.pbCopy.Size = new System.Drawing.Size(26, 25);
+            this.pbCopy.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbCopy.TabIndex = 2;
+            this.pbCopy.TabStop = false;
+            this.pbCopy.Click += new System.EventHandler(this.PbCopy_Click);
+            // 
             // lblBTCAddress
             // 
             this.lblBTCAddress.AutoSize = true;
@@ -573,38 +608,47 @@
             this.gbQuickCommand.TabStop = false;
             this.gbQuickCommand.Text = "Quick Command";
             // 
-            // btnSave
+            // btnPurgeEvolution
             // 
-            this.btnSave.Location = new System.Drawing.Point(10, 27);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
-            this.btnSave.TabIndex = 8;
-            this.btnSave.Text = "Save";
-            this.ttMain.SetToolTip(this.btnSave, "Force server to save map.");
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
+            this.btnPurgeEvolution.Location = new System.Drawing.Point(385, 27);
+            this.btnPurgeEvolution.Name = "btnPurgeEvolution";
+            this.btnPurgeEvolution.Size = new System.Drawing.Size(119, 23);
+            this.btnPurgeEvolution.TabIndex = 13;
+            this.btnPurgeEvolution.Text = "Purge Evolution";
+            this.ttMain.SetToolTip(this.btnPurgeEvolution, "Set server evolution to 0 (Slow rate of biter spawns)");
+            this.btnPurgeEvolution.UseVisualStyleBackColor = true;
+            this.btnPurgeEvolution.Click += new System.EventHandler(this.BtnPurgeEvolution_Click);
             // 
-            // btnSetDay
+            // btnRefillResources
             // 
-            this.btnSetDay.Location = new System.Drawing.Point(91, 27);
-            this.btnSetDay.Name = "btnSetDay";
-            this.btnSetDay.Size = new System.Drawing.Size(93, 23);
-            this.btnSetDay.TabIndex = 9;
-            this.btnSetDay.Text = "Always Day";
-            this.ttMain.SetToolTip(this.btnSetDay, "Disable night time on server.");
-            this.btnSetDay.UseVisualStyleBackColor = true;
-            this.btnSetDay.Click += new System.EventHandler(this.BtnSetDay_Click);
+            this.btnRefillResources.Location = new System.Drawing.Point(738, 27);
+            this.btnRefillResources.Name = "btnRefillResources";
+            this.btnRefillResources.Size = new System.Drawing.Size(121, 23);
+            this.btnRefillResources.TabIndex = 12;
+            this.btnRefillResources.Text = "Refill Resources";
+            this.btnRefillResources.UseVisualStyleBackColor = true;
+            this.btnRefillResources.Visible = false;
+            this.btnRefillResources.Click += new System.EventHandler(this.BtnRefillResources_Click);
             // 
-            // btnHelp
+            // btnResearchAll
             // 
-            this.btnHelp.Location = new System.Drawing.Point(190, 27);
-            this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(75, 23);
-            this.btnHelp.TabIndex = 10;
-            this.btnHelp.Text = "Help";
-            this.ttMain.SetToolTip(this.btnHelp, "Get list of supported commands from server.");
-            this.btnHelp.UseVisualStyleBackColor = true;
-            this.btnHelp.Click += new System.EventHandler(this.BtnHelp_Click);
+            this.btnResearchAll.Location = new System.Drawing.Point(624, 27);
+            this.btnResearchAll.Name = "btnResearchAll";
+            this.btnResearchAll.Size = new System.Drawing.Size(108, 23);
+            this.btnResearchAll.TabIndex = 12;
+            this.btnResearchAll.Text = "Research All";
+            this.btnResearchAll.UseVisualStyleBackColor = true;
+            this.btnResearchAll.Click += new System.EventHandler(this.BtnResearchAll_Click);
+            // 
+            // btnPurgeBiters
+            // 
+            this.btnPurgeBiters.Location = new System.Drawing.Point(510, 27);
+            this.btnPurgeBiters.Name = "btnPurgeBiters";
+            this.btnPurgeBiters.Size = new System.Drawing.Size(108, 23);
+            this.btnPurgeBiters.TabIndex = 12;
+            this.btnPurgeBiters.Text = "Purge Biters";
+            this.btnPurgeBiters.UseVisualStyleBackColor = true;
+            this.btnPurgeBiters.Click += new System.EventHandler(this.BtnPurgeBiters_Click);
             // 
             // btnClearPollution
             // 
@@ -617,68 +661,111 @@
             this.btnClearPollution.UseVisualStyleBackColor = true;
             this.btnClearPollution.Click += new System.EventHandler(this.BtnClearPollution_Click);
             // 
-            // btnPurgeBiters
+            // btnHelp
             // 
-            this.btnPurgeBiters.Location = new System.Drawing.Point(510, 27);
-            this.btnPurgeBiters.Name = "btnPurgeBiters";
-            this.btnPurgeBiters.Size = new System.Drawing.Size(108, 23);
-            this.btnPurgeBiters.TabIndex = 12;
-            this.btnPurgeBiters.Text = "Purge Biters";
-            this.btnPurgeBiters.UseVisualStyleBackColor = true;
-            this.btnPurgeBiters.Click += new System.EventHandler(this.BtnPurgeBiters_Click);
+            this.btnHelp.Location = new System.Drawing.Point(190, 27);
+            this.btnHelp.Name = "btnHelp";
+            this.btnHelp.Size = new System.Drawing.Size(75, 23);
+            this.btnHelp.TabIndex = 10;
+            this.btnHelp.Text = "Help";
+            this.ttMain.SetToolTip(this.btnHelp, "Get list of supported commands from server.");
+            this.btnHelp.UseVisualStyleBackColor = true;
+            this.btnHelp.Click += new System.EventHandler(this.BtnHelp_Click);
             // 
-            // btnPurgeEvolution
+            // btnSetDay
             // 
-            this.btnPurgeEvolution.Location = new System.Drawing.Point(385, 27);
-            this.btnPurgeEvolution.Name = "btnPurgeEvolution";
-            this.btnPurgeEvolution.Size = new System.Drawing.Size(119, 23);
-            this.btnPurgeEvolution.TabIndex = 13;
-            this.btnPurgeEvolution.Text = "Purge Evolution";
-            this.ttMain.SetToolTip(this.btnPurgeEvolution, "Set server evolution to 0 (Slow rate of biter spawns)");
-            this.btnPurgeEvolution.UseVisualStyleBackColor = true;
-            this.btnPurgeEvolution.Click += new System.EventHandler(this.BtnPurgeEvolution_Click);
+            this.btnSetDay.Location = new System.Drawing.Point(91, 27);
+            this.btnSetDay.Name = "btnSetDay";
+            this.btnSetDay.Size = new System.Drawing.Size(93, 23);
+            this.btnSetDay.TabIndex = 9;
+            this.btnSetDay.Text = "Always Day";
+            this.ttMain.SetToolTip(this.btnSetDay, "Disable night time on server.");
+            this.btnSetDay.UseVisualStyleBackColor = true;
+            this.btnSetDay.Click += new System.EventHandler(this.BtnSetDay_Click);
             // 
-            // pbRefresh
+            // btnSave
             // 
-            this.pbRefresh.Image = global::FactorioRcon.Properties.Resources.refresh_button;
-            this.pbRefresh.Location = new System.Drawing.Point(367, 15);
-            this.pbRefresh.Name = "pbRefresh";
-            this.pbRefresh.Size = new System.Drawing.Size(35, 34);
-            this.pbRefresh.TabIndex = 1;
-            this.pbRefresh.TabStop = false;
-            this.pbRefresh.Click += new System.EventHandler(this.PbRefresh_Click);
+            this.btnSave.Location = new System.Drawing.Point(10, 27);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.TabIndex = 8;
+            this.btnSave.Text = "Save";
+            this.ttMain.SetToolTip(this.btnSave, "Force server to save map.");
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
             // 
-            // pbCopy
+            // tabDiagnostic
             // 
-            this.pbCopy.Image = global::FactorioRcon.Properties.Resources.copy_content;
-            this.pbCopy.Location = new System.Drawing.Point(391, 22);
-            this.pbCopy.Name = "pbCopy";
-            this.pbCopy.Size = new System.Drawing.Size(26, 25);
-            this.pbCopy.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pbCopy.TabIndex = 2;
-            this.pbCopy.TabStop = false;
-            this.pbCopy.Click += new System.EventHandler(this.PbCopy_Click);
+            this.tabDiagnostic.Controls.Add(this.splDiagnostic);
+            this.tabDiagnostic.Location = new System.Drawing.Point(4, 25);
+            this.tabDiagnostic.Name = "tabDiagnostic";
+            this.tabDiagnostic.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDiagnostic.Size = new System.Drawing.Size(901, 437);
+            this.tabDiagnostic.TabIndex = 3;
+            this.tabDiagnostic.Text = "Diagnostic";
+            this.tabDiagnostic.UseVisualStyleBackColor = true;
             // 
-            // btnResearchAll
+            // splDiagnostic
             // 
-            this.btnResearchAll.Location = new System.Drawing.Point(624, 27);
-            this.btnResearchAll.Name = "btnResearchAll";
-            this.btnResearchAll.Size = new System.Drawing.Size(108, 23);
-            this.btnResearchAll.TabIndex = 12;
-            this.btnResearchAll.Text = "Research All";
-            this.btnResearchAll.UseVisualStyleBackColor = true;
-            this.btnResearchAll.Click += new System.EventHandler(this.BtnResearchAll_Click);
+            this.splDiagnostic.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splDiagnostic.Location = new System.Drawing.Point(3, 3);
+            this.splDiagnostic.Name = "splDiagnostic";
+            this.splDiagnostic.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
-            // btnRefillResources
+            // splDiagnostic.Panel1
             // 
-            this.btnRefillResources.Location = new System.Drawing.Point(738, 27);
-            this.btnRefillResources.Name = "btnRefillResources";
-            this.btnRefillResources.Size = new System.Drawing.Size(121, 23);
-            this.btnRefillResources.TabIndex = 12;
-            this.btnRefillResources.Text = "Refill Resources";
-            this.btnRefillResources.UseVisualStyleBackColor = true;
-            this.btnRefillResources.Visible = false;
-            this.btnRefillResources.Click += new System.EventHandler(this.BtnRefillResources_Click);
+            this.splDiagnostic.Panel1.Controls.Add(this.label3);
+            this.splDiagnostic.Panel1.Controls.Add(this.gridOut);
+            // 
+            // splDiagnostic.Panel2
+            // 
+            this.splDiagnostic.Panel2.Controls.Add(this.label4);
+            this.splDiagnostic.Panel2.Controls.Add(this.gridIn);
+            this.splDiagnostic.Size = new System.Drawing.Size(895, 431);
+            this.splDiagnostic.SplitterDistance = 200;
+            this.splDiagnostic.TabIndex = 0;
+            // 
+            // gridOut
+            // 
+            this.gridOut.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gridOut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gridOut.Location = new System.Drawing.Point(3, 28);
+            this.gridOut.Name = "gridOut";
+            this.gridOut.Size = new System.Drawing.Size(889, 169);
+            this.gridOut.TabIndex = 1;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold);
+            this.label3.Location = new System.Drawing.Point(3, 7);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(77, 16);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "Outgoing:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold);
+            this.label4.Location = new System.Drawing.Point(3, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(76, 16);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Incoming:";
+            // 
+            // gridIn
+            // 
+            this.gridIn.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gridIn.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gridIn.Location = new System.Drawing.Point(3, 30);
+            this.gridIn.Name = "gridIn";
+            this.gridIn.Size = new System.Drawing.Size(889, 194);
+            this.gridIn.TabIndex = 1;
             // 
             // FrmMain
             // 
@@ -702,6 +789,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splConsole)).EndInit();
             this.splConsole.ResumeLayout(false);
             this.tabStatus.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).EndInit();
             this.gbPlayers.ResumeLayout(false);
             this.gbPlayers.PerformLayout();
             this.tabAbout.ResumeLayout(false);
@@ -711,11 +799,19 @@
             this.gbContact.PerformLayout();
             this.gbContribution.ResumeLayout(false);
             this.gbContribution.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCopy)).EndInit();
             this.gbConnect.ResumeLayout(false);
             this.gbConnect.PerformLayout();
             this.gbQuickCommand.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCopy)).EndInit();
+            this.tabDiagnostic.ResumeLayout(false);
+            this.splDiagnostic.Panel1.ResumeLayout(false);
+            this.splDiagnostic.Panel1.PerformLayout();
+            this.splDiagnostic.Panel2.ResumeLayout(false);
+            this.splDiagnostic.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splDiagnostic)).EndInit();
+            this.splDiagnostic.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.gridOut)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridIn)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -775,6 +871,12 @@
         private System.Windows.Forms.ToolTip ttMain;
         private System.Windows.Forms.Button btnResearchAll;
         private System.Windows.Forms.Button btnRefillResources;
+        private System.Windows.Forms.TabPage tabDiagnostic;
+        private System.Windows.Forms.SplitContainer splDiagnostic;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.DataGridView gridOut;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.DataGridView gridIn;
     }
 }
 

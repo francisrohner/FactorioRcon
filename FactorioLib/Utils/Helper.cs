@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace FactorioLib.Utils
 {
-    public static class UI_Utils
+    public static class Helper
     {
         //Mutated from example ==> https://stackoverflow.com/a/20042058
         public static void DrawGroupBox(GroupBox box, Graphics g, Color borderColor)
@@ -41,6 +41,27 @@ namespace FactorioLib.Utils
                 borderBrush.Dispose();
                 borderPen.Dispose();
             }
+        }
+        
+        public static string ToHex(byte[] arr)
+        {
+            StringBuilder hex = new StringBuilder(arr.Length * 2);            
+            for(int i = 0; i < arr.Length; i++)
+                hex.AppendFormat("{0:X2}", arr[i]);
+            return hex.ToString();
+        }
+        public static string ToByteCSV(byte[] arr)
+        {
+            StringBuilder ret = new StringBuilder();
+            ret.Append("(");
+            for (int i = 0; i < arr.Length; i++)
+            {
+                ret.Append((int)arr[i]);
+                ret.Append(",");
+            }
+            ret.Length = ret.Length - 1; //trim last comma
+            ret.Append(")");
+            return ret.ToString();
         }
     }
 }

@@ -19,16 +19,16 @@ namespace FactorioLib.Data
         public string CraftTimeBase { get; set; }
         public string Product1_Type { get; set; }
 
-        public static int FromString(string sv_line, out Item item)
+        public static int FromString(string splitValueLine, out Item item)
         {
             int ret = (int)ERROR_CODES.FAILURE;            
             item = null;
 
-            if (sv_line.StartsWith("Name|")) return (int)ERROR_CODES.UNSUPPORTED;
+            if (splitValueLine.StartsWith("Name|")) return (int)ERROR_CODES.UNSUPPORTED;
 
-            if (sv_line.Contains("|"))
+            if (splitValueLine.Contains("|"))
             {
-                string[] arr = sv_line.Split('|');
+                string[] arr = splitValueLine.Split('|');
                 item = new Item()
                 {
                     Name = arr[0],
@@ -44,7 +44,7 @@ namespace FactorioLib.Data
         }
 
         public Bitmap Icon { get;set; }
-        private string _ImageNameFromName()
+        private string ImageNameFromName()
         {
             string ret = string.Empty;
 
@@ -92,7 +92,7 @@ namespace FactorioLib.Data
             int ret = (int)ERROR_CODES.FAILURE;
             image = null;
 
-            string imgFileName = _ImageNameFromName() + ".png";
+            string imgFileName = ImageNameFromName() + ".png";
             
 
             string url = "https://wiki.factorio.com/images/" + imgFileName;

@@ -11,7 +11,7 @@ namespace FactorioLib.Logging
     public class FileLogger : ILogger
     {
         public string FilePath { get; set; }
-        private StreamWriter _writer;
+        private StreamWriter writer;
 
         public FileLogger()
         {
@@ -21,12 +21,12 @@ namespace FactorioLib.Logging
                 FilePath = path + @"\" + FileSystemUtils.GetDateTimeStr() + ".txt";
                 try
                 {
-                    _writer = new StreamWriter(FilePath);
+                    writer = new StreamWriter(FilePath);
                 }
                 catch
                 {
                     //TODO WARN IN UI
-                    _writer = null;
+                    writer = null;
                 }
             }
             else //Unable to create directory under program data 
@@ -40,11 +40,11 @@ namespace FactorioLib.Logging
             FilePath = filePath;
             try
             {
-                _writer = new StreamWriter(FilePath);
+                writer = new StreamWriter(FilePath);
             }
             catch
             {
-                _writer = null;
+                writer = null;
                 //TODO WARN IN UI
             }
         }
@@ -65,26 +65,26 @@ namespace FactorioLib.Logging
             //[ERROR|2019-04-06 14:12:13.100|0]: TAG ==> CONTENT
             //Ex:
             ////[ERROR|2019-04-06 14:12:13.100|0]: FileSystemUtils::FcnName ==> CONTENT
-            _writer.WriteLine(_GenLine("ERROR", tag, msg));
-            _writer.Flush(); //flush to disk
+            writer.WriteLine(_GenLine("ERROR", tag, msg));
+            writer.Flush(); //flush to disk
         }
 
         public void LogError(string tag, string msg, int level)
         {
-            _writer.WriteLine(_GenLine("ERROR", tag, msg, level));
-            _writer.Flush(); //flush to disk
+            writer.WriteLine(_GenLine("ERROR", tag, msg, level));
+            writer.Flush(); //flush to disk
         }
 
         public void LogInfo(string tag, string msg)
         {
-            _writer.WriteLine(_GenLine("INFO", tag, msg));
-            _writer.Flush(); //flush to disk
+            writer.WriteLine(_GenLine("INFO", tag, msg));
+            writer.Flush(); //flush to disk
         }
 
         public void LogWarning(string tag, string msg)
         {
-            _writer.WriteLine(_GenLine("WARNING", tag, msg));
-            _writer.Flush(); //flush to disk
+            writer.WriteLine(_GenLine("WARNING", tag, msg));
+            writer.Flush(); //flush to disk
         }
     }
 }

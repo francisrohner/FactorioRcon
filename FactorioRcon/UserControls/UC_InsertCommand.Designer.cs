@@ -1,6 +1,6 @@
 ﻿namespace FactorioRcon.UserControls
 {
-    partial class UsrCtl_InsertCommand
+    partial class UC_InsertCommand
     {
         /// <summary> 
         /// Required designer variable.

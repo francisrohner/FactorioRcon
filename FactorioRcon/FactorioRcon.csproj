@@ -58,23 +58,23 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UserControls\UsrCtl_CommandGenerator.cs">
+    <Compile Include="UserControls\UC_CommandGenerator.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserControls\UsrCtl_CommandGenerator.Designer.cs">
-      <DependentUpon>UsrCtl_CommandGenerator.cs</DependentUpon>
+    <Compile Include="UserControls\UC_CommandGenerator.Designer.cs">
+      <DependentUpon>UC_CommandGenerator.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\UsrCtl_InsertCommand.cs">
+    <Compile Include="UserControls\UC_InsertCommand.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserControls\UsrCtl_InsertCommand.Designer.cs">
-      <DependentUpon>UsrCtl_InsertCommand.cs</DependentUpon>
+    <Compile Include="UserControls\UC_InsertCommand.Designer.cs">
+      <DependentUpon>UC_InsertCommand.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\UsrCtl_RefillOre.cs">
+    <Compile Include="UserControls\UC_RefillOre.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserControls\UsrCtl_RefillOre.Designer.cs">
-      <DependentUpon>UsrCtl_RefillOre.cs</DependentUpon>
+    <Compile Include="UserControls\UC_RefillOre.Designer.cs">
+      <DependentUpon>UC_RefillOre.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Forms\FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
@@ -89,14 +89,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="UserControls\UsrCtl_CommandGenerator.resx">
-      <DependentUpon>UsrCtl_CommandGenerator.cs</DependentUpon>
+    <EmbeddedResource Include="UserControls\UC_CommandGenerator.resx">
+      <DependentUpon>UC_CommandGenerator.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UserControls\UsrCtl_InsertCommand.resx">
-      <DependentUpon>UsrCtl_InsertCommand.cs</DependentUpon>
+    <EmbeddedResource Include="UserControls\UC_InsertCommand.resx">
+      <DependentUpon>UC_InsertCommand.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UserControls\UsrCtl_RefillOre.resx">
-      <DependentUpon>UsrCtl_RefillOre.cs</DependentUpon>
+    <EmbeddedResource Include="UserControls\UC_RefillOre.resx">
+      <DependentUpon>UC_RefillOre.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
