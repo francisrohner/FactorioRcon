@@ -153,7 +153,7 @@ namespace FactorioLib.Network
             return ret;
         }
 
-        public int Connect(string host, int port, string password)
+       public int Connect(string host, int port, string password)
         {
             int ret = (int)ERROR_CODES.FAILURE;
             int ec;

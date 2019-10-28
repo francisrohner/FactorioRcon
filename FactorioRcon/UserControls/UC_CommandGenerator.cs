@@ -102,7 +102,6 @@ namespace FactorioRcon.UserControls
                     
                     break;
             }
-
             frmMain.SetConsoleText(str_cmd);
             Parent.Controls.Remove(this);
         }

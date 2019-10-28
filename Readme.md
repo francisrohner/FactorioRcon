@@ -1,13 +1,6 @@
 FactorioRcon
 ==========================
 User friendly simplistic rcon client for Factorio game servers.
-Supports host name resolution.
-
-Screenshots
-=========================
-![Alt text](/Screens/GivePlayerItem.png?raw=true "")
-
-![Alt text](/Screens/ExecuteCommand.png?raw=true "")
 
 Quick Commands
 ==========================
